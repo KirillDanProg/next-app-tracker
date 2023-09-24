@@ -26,3 +26,15 @@ body {
 .blue_gradient {
     @apply bg-gradient-to-br from-black to-blue;
 }
+
+.btn-contained {
+    @apply bg-white text-blue rounded-full px-3 py-2 hover:scale-105 cursor-pointer;
+}
+
+.dropdown {
+    @apply absolute right-0 top-full flex gap-2 justify-center items-center min-w-[150px] mt-4 mr-4 p-2 rounded-lg bg-white;
+}
+
+.dropdown_link {
+    @apply text-sm font-inter text-black font-medium block;
+}
