@@ -1,9 +1,12 @@
- const  Home = () => {
-    return (
-        <main className='min-h-screen flex-center blue_gradient'>
-           <h1 className="head_text">Expense tracker</h1>
-        </main>
-    )
-}
+import AddExpanseForm from "@/components/AddExpanseForm";
 
-export default Home 
+const Home = () => {
+  return (
+    <main>
+      <h1 className="head_text m-16">Expense tracker</h1>
+      <AddExpanseForm />
+    </main>
+  );
+};
+
+export default Home;

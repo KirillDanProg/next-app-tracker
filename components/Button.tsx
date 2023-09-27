@@ -1,12 +1,19 @@
+import React from "react";
+
 type ButtonProps = {
-    handler: () => void
-}
-const Button = ({handler}: ButtonProps) => {
-    return (
-        <button onClick={handler}>
-            Добавить
-        </button>
-    );
-}
+  type?: "button" | "submit" | "reset" | undefined
+  trigger: React.ReactNode;
+  handler: () => void;
+  className: string;
+};
+
+const Button = ({ handler, trigger, className, type }: ButtonProps) => {
+  const buttonType = type || "button"
+  return (
+    <button type={buttonType} onClick={handler} className={className}>
+      {trigger}
+    </button>
+  );
+};
 
 export default Button;

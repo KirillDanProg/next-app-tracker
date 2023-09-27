@@ -1,39 +1,35 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { FormDataType } from "@/components/AddExpanseForm";
 
 type InitialState = {
-    expenses: Expense[]
-    status: Status
-    error: string | string[]
-}
+    expenses: Expense[];
+    status: Status;
+    error: string | string[];
+};
 type Expense = {
-    id: "",
-    name: "",
-    amount: 0
-}
-type Status = 'idle' | 'loading' | 'success' | 'failed'
+    id: "";
+    title: "";
+    amount: 0;
+};
+type Status = "idle" | "loading" | "success" | "failed";
 
 const initialState = {
     expenses: [],
-    status: 'idle',
-    error: ''
-} as InitialState
+    status: "idle",
+    error: "",
+} as InitialState;
 
 const expenses = createSlice({
-    name: 'expenses',
+    name: "expenses",
     initialState,
     reducers: {
-        addExpense: (state, action) => {
-
-        },
         deleteExpense: (state, action) => {
-
         },
         editExpense: () => {
-
-        }
+        },
     },
-})
+});
 
-
-export const {addExpense, editExpense, deleteExpense} = expenses.actions
-export default expenses.reducer
+export const
+ { editExpense, deleteExpense } = expenses.actions;
+export default expenses.reducer;
