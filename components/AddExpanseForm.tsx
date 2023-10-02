@@ -1,81 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "@/styles/AddExpenseStyle.module.scss";
 import Button from "@/components/Button";
-import { ChangeEvent } from "react"
 import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { addExpenseThunk } from "@/state/features/expense-slice";
+import { useAppDispatch } from "@/state/store";
 
-
-export type FormDataType = {
+export type Expense = {
     title: string;
     date?: string;
     amount: number | string;
     category?: string;
 };
 
-type Event = ChangeEvent<HTMLInputElement | HTMLSelectElement>
-
-const addExpenseToUserById = async (id: string, formData: FormDataType) => {
-    const res = await fetch(`http://localhost:3000/api/users/${id}`, {
-        method: 'POST',
-        cache: "no-cache",
-        body: JSON.stringify(formData)
-    })
-    if (!res.ok) {
-        throw new Error('addExpenseToUserById error')
-    }
-    return res
-}
-
 function AddExpanseForm() {
     const { data } = useSession()
-    const initialFormData = {
-        title: "",
-        date: "",
-        amount: "",
-        category: "",
-    };
-
-    const [formData, setFormData] = useState<FormDataType>(initialFormData);
-
-    const onChangeHandler = (e: Event) => {
-        const { name, value } = e.target;
-        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
-    };
-    const onSubmitHandler = async (e: any) => {
-        e.preventDefault()
-        const id = data?.user?.id
-        const res = await addExpenseToUserById(id, formData)
+    const [ status, setStatus ] = useState("idle")
+    const { register, handleSubmit, formState: { errors } } = useForm<Expense>()
+    const dispatch = useAppDispatch()
+    const onSubmitHandler = async (formData: Expense) => {
+        setStatus('loading')
+        const id = data?.user.id
+        dispatch(addExpenseThunk({ id, formData }))
+        setStatus('success')
     }
 
+    useEffect(() => {
+        setTimeout(() => {
+            setStatus('idle')
+        }, 3000)
+    }, [ status ])
+
+    const btnStatusStyle = status === 'success' ? styles.success : ""
+    const btnContent = status === 'success' ? 'added' : 'add'
     return (
         <div className={styles.addExpenseContainer}>
             <form className="flex flex-col gap-4"
-                onSubmit={onSubmitHandler}
+                  onSubmit={handleSubmit(onSubmitHandler)}
             >
                 <input
                     type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={onChangeHandler}
+                    {...register('title', { minLength: 3, required: true })}
                     className="input_expense"
                     placeholder="Title"
                 />
+                {errors.title && <p className={'text-white'}>Title should be at least 3 symbols</p>}
                 <input
                     type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={onChangeHandler}
+                    {...register('amount', { min: 1, required: true })}
                     className="input_expense"
                     placeholder="Amount"
                 />
+                {errors.amount && <p className={'text-white'}>Amount should be more than 0</p>}
                 <select
                     id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={onChangeHandler}
-                    className="bg-white text-black border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    {...register('category')}
+                    placeholder="Choose a category"
+                    className="bg-white text-black border rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 >
                     <option defaultValue="">Choose a category</option>
                     <option value="food">Food</option>
@@ -86,16 +69,15 @@ function AddExpanseForm() {
                 <input
                     type="date"
                     id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={onChangeHandler}
+                    {...register('date')}
                     className="input_expense"
                 />
                 <Button
                     type="submit"
-                    className="btn-contained"
-                    trigger="Add"
-                    handler={() => { }}
+                    className={`${styles.button} ${btnStatusStyle}`}
+                    trigger={btnContent}
+                    handler={() => {
+                    }}
                 />
             </form>
         </div>
