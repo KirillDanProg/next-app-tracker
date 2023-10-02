@@ -1,9 +1,72 @@
 .addExpenseContainer {
   display: flex;
-  gap: 16px;
+  justify-content: center;
+  gap: 1em;
 
-  input {
+  .button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0.5em 1em;
+    border: mediumspringgreen solid 0.15em;
+    border-radius: 2em;
+    color: mediumspringgreen;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border 300ms, color 300ms;
+    user-select: none;
+    z-index: 1;
 
+
+    &::before, &::after {
+      content: "";
+      position: absolute;
+      width: 13em;
+      aspect-ratio: 2;
+      background: mediumspringgreen;
+      opacity: 50%;
+      border-radius: 50%;
+      transition: transform 500ms, background 300ms;
+      z-index: -1;
+    }
+
+    &::before {
+      right: 0;
+      transform: translate(-12em);
+    }
+
+    &::after {
+      left: 0;
+      transform: translate(12em);
+    }
+
+    &:hover::before {
+      transform: translate(-9em);
+    }
+
+    &:hover::after {
+      transform: translate(9em);
+    }
   }
 
+  .success {
+    z-index: 10;
+    color: #212121;
+  }
+
+  .success.button::after {
+    transform: translate(-0.5em);
+  }
+
+  .success.button::before {
+    transform: translate(0.5em);
+  }
+
+  //.failed {
+  //  background-color: theme('colors.red');
+  //}
 }
