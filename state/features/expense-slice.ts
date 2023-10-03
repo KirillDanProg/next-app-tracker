@@ -1,12 +1,12 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Expense } from "@/components/AddExpanseForm";
+import { AppState } from "@/state/store";
 
 type InitialState = {
     expenses: Expense[];
     status: Status;
     error: string | string[];
 };
-
 type Status = "idle" | "loading" | "success" | "failed";
 
 const initialState = {
@@ -19,7 +19,7 @@ const expenses = createSlice({
     name: "expenses",
     initialState,
     reducers: {
-        addExpense: (state, {payload}: {payload: Expense}) => {
+        addExpense: (state, { payload }: { payload: Expense }) => {
             state.expenses.push(payload)
         },
         deleteExpense: (state, action) => {
@@ -27,31 +27,51 @@ const expenses = createSlice({
         },
         editExpense: () => {
         },
+        setStatus: (state, { payload }: PayloadAction<Status>) => {
+            state.status = payload
+        }
     },
-    // extraReducers: (builder) => {
-    //     builder
-    //         .addCase(addExpenseThunk.fulfilled, (state, action) => {
-    //             debugger
-    //         })
-    // }
+    extraReducers: (builder) => {
+        builder
+            .addCase(addExpenseThunk.fulfilled, (state, action) => {
+                state.status = 'success'
+            })
+            .addCase(addExpenseThunk.rejected, (state, {payload}) => {
+                if(payload) {
+                    state.error = payload
+                }
+                state.status = 'failed'
+            })
+            .addCase(addExpenseThunk.pending, (state) => {
+                state.status = 'loading'
+            })
+    }
 });
 
-export const { editExpense, deleteExpense, addExpense } = expenses.actions;
-export const addExpenseThunk = createAsyncThunk<any, { id: string | undefined, formData: Expense }>(
+export const getStatusSelector = (state: AppState) => state.expenses.status
+
+export const { editExpense, deleteExpense, addExpense, setStatus } = expenses.actions;
+
+export const addExpenseThunk = createAsyncThunk<string, { id: string | undefined, formData: Expense }, {rejectValue: string}>(
     'expenses/addExpense', async ({ id, formData }, thunkAPI) => {
-        if (!id) {
-            return thunkAPI.rejectWithValue("error")
+        try {
+            if (!id) {
+                throw new Error('User not authorized')
+            }
+            const res = await fetch(`http://localhot:3000/api/users/${id}`, {
+                method: 'POST',
+                cache: "no-cache",
+                body: JSON.stringify(formData)
+            })
+            if (!res.ok) {
+                throw new Error('Something went wrong, try again later')
+            }
+            thunkAPI.dispatch(addExpense(formData))
+            return await res.json()
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error as string)
         }
-        const res = await fetch(`http://localhost:3000/api/users/${id}`, {
-            method: 'POST',
-            cache: "no-cache",
-            body: JSON.stringify(formData)
-        })
-        if (!res.ok) {
-            return thunkAPI.rejectWithValue("error")
-        }
-        thunkAPI.dispatch(addExpense(formData))
-        return res.json()
+
     }
 )
 
