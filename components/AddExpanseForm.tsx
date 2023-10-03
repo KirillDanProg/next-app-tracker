@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import styles from "@/styles/AddExpenseStyle.module.scss";
 import Button from "@/components/Button";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { addExpenseThunk } from "@/state/features/expense-slice";
-import { useAppDispatch } from "@/state/store";
+import { addExpenseThunk, getStatusSelector, setStatus } from "@/state/features/expense-slice";
+import { useAppDispatch, useAppSelector } from "@/state/store";
+import { useEffect } from "react";
 
 export type Expense = {
     title: string;
@@ -17,28 +17,45 @@ export type Expense = {
 
 function AddExpanseForm() {
     const { data } = useSession()
-    const [ status, setStatus ] = useState("idle")
+    const status = useAppSelector(getStatusSelector)
     const { register, handleSubmit, formState: { errors } } = useForm<Expense>()
     const dispatch = useAppDispatch()
+
     const onSubmitHandler = async (formData: Expense) => {
-        setStatus('loading')
         const id = data?.user.id
-        dispatch(addExpenseThunk({ id, formData }))
-        setStatus('success')
+        const res = await dispatch(addExpenseThunk({ id, formData }))
+    }
+
+    let btnStatusStyle;
+    let btnContent;
+
+    switch (status) {
+        case 'success':
+            btnStatusStyle = styles.success
+            btnContent = 'added'
+            break
+        case 'failed':
+            btnStatusStyle = styles.failed
+            btnContent = 'error'
+            break
+        default:
+            btnStatusStyle = ""
+            btnContent = 'add'
+
     }
 
     useEffect(() => {
-        setTimeout(() => {
-            setStatus('idle')
-        }, 3000)
-    }, [ status ])
+        if (status === 'success' || status === 'failed') {
+            setTimeout(() => {
+                dispatch(setStatus('idle'))
+            }, 3000)
+        }
+    }, [status])
 
-    const btnStatusStyle = status === 'success' ? styles.success : ""
-    const btnContent = status === 'success' ? 'added' : 'add'
     return (
         <div className={styles.addExpenseContainer}>
             <form className="flex flex-col gap-4"
-                  onSubmit={handleSubmit(onSubmitHandler)}
+                onSubmit={handleSubmit(onSubmitHandler)}
             >
                 <input
                     type="text"
