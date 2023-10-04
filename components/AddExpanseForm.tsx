@@ -4,26 +4,22 @@ import styles from "@/styles/AddExpenseStyle.module.scss";
 import Button from "@/components/Button";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { addExpenseThunk, getStatusSelector, setStatus } from "@/state/features/expense-slice";
+import { addExpenseThunk, getErrorSelector, getStatusSelector, setStatus } from "@/state/features/expense-slice";
 import { useAppDispatch, useAppSelector } from "@/state/store";
 import { useEffect } from "react";
+import { Expense } from "@/types/expense";
 
-export type Expense = {
-    title: string;
-    date?: string;
-    amount: number | string;
-    category?: string;
-};
 
 function AddExpanseForm() {
     const { data } = useSession()
     const status = useAppSelector(getStatusSelector)
+    const error = useAppSelector(getErrorSelector)
     const { register, handleSubmit, formState: { errors } } = useForm<Expense>()
     const dispatch = useAppDispatch()
 
     const onSubmitHandler = async (formData: Expense) => {
         const id = data?.user.id
-        const res = await dispatch(addExpenseThunk({ id, formData }))
+        await dispatch(addExpenseThunk({ id, formData }))
     }
 
     let btnStatusStyle;
@@ -50,12 +46,13 @@ function AddExpanseForm() {
                 dispatch(setStatus('idle'))
             }, 3000)
         }
-    }, [status])
+    }, [ status ])
 
     return (
-        <div className={styles.addExpenseContainer}>
+        <div className={'flex flex-col flex-center '}>
+            <p className={'text-white'}>{error}</p>
             <form className="flex flex-col gap-4"
-                onSubmit={handleSubmit(onSubmitHandler)}
+                  onSubmit={handleSubmit(onSubmitHandler)}
             >
                 <input
                     type="text"
@@ -64,12 +61,21 @@ function AddExpanseForm() {
                     placeholder="Title"
                 />
                 {errors.title && <p className={'text-white'}>Title should be at least 3 symbols</p>}
-                <input
-                    type="number"
-                    {...register('amount', { min: 1, required: true })}
-                    className="input_expense"
-                    placeholder="Amount"
-                />
+                <div className={'flex gap-1'}>
+                    <input
+                        type="number"
+                        {...register('amount', { min: 1, required: true })}
+                        className="input_expense"
+                        placeholder="Amount"
+                    />
+                    <select
+                        className={'rounded-full px-2 text-sm'}
+                        {...register('currency')}>
+                        <option value={'RUB'}>RUB</option>
+                        <option value={'USD'}>USD</option>
+                        <option value={'EUR'}>EUR</option>
+                    </select>
+                </div>
                 {errors.amount && <p className={'text-white'}>Amount should be more than 0</p>}
                 <select
                     id="category"
