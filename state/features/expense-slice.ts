@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Expense } from "@/components/AddExpanseForm";
 import { AppState } from "@/state/store";
+import { Expense } from "@/types/expense";
 
 type InitialState = {
     expenses: Expense[];
@@ -36,9 +36,9 @@ const expenses = createSlice({
             .addCase(addExpenseThunk.fulfilled, (state, action) => {
                 state.status = 'success'
             })
-            .addCase(addExpenseThunk.rejected, (state, {payload}) => {
-                if(payload) {
-                    state.error = payload
+            .addCase(addExpenseThunk.rejected, (state, {payload: error}) => {
+                if(error) {
+                    state.error = error.message
                 }
                 state.status = 'failed'
             })
@@ -49,16 +49,17 @@ const expenses = createSlice({
 });
 
 export const getStatusSelector = (state: AppState) => state.expenses.status
+export const getErrorSelector = (state: AppState) => state.expenses.error
 
 export const { editExpense, deleteExpense, addExpense, setStatus } = expenses.actions;
 
-export const addExpenseThunk = createAsyncThunk<string, { id: string | undefined, formData: Expense }, {rejectValue: string}>(
+export const addExpenseThunk = createAsyncThunk<string, { id: string | undefined, formData: Expense }, {rejectValue: Error}>(
     'expenses/addExpense', async ({ id, formData }, thunkAPI) => {
         try {
             if (!id) {
-                throw new Error('User not authorized')
+                throw new Error('You are not authorized')
             }
-            const res = await fetch(`http://localhot:3000/api/users/${id}`, {
+            const res = await fetch(`http://localhost:3000/api/users/${id}`, {
                 method: 'POST',
                 cache: "no-cache",
                 body: JSON.stringify(formData)
@@ -69,7 +70,7 @@ export const addExpenseThunk = createAsyncThunk<string, { id: string | undefined
             thunkAPI.dispatch(addExpense(formData))
             return await res.json()
         } catch (error) {
-            return thunkAPI.rejectWithValue(error as string)
+            return thunkAPI.rejectWithValue(error as Error)
         }
 
     }

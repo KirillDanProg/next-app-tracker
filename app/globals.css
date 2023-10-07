@@ -38,3 +38,6 @@ body {
 .dropdown_link {
     @apply text-sm font-inter text-black font-medium block;
 }
+.input_expense {
+    @apply rounded-full p-3 text-sm
+}

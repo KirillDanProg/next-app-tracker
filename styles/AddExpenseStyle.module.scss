@@ -1,8 +1,3 @@
-.addExpenseContainer {
-  display: flex;
-  justify-content: center;
-  gap: 1em;
-
   .button {
     all: unset;
     display: flex;
@@ -21,11 +16,14 @@
     user-select: none;
     z-index: 1;
 
+    &:hover {
+      color: #212121;
+    }
 
     &::before, &::after {
       content: "";
       position: absolute;
-      width: 13em;
+      width: 17em;
       aspect-ratio: 2;
       background: mediumspringgreen;
       opacity: 50%;
@@ -45,11 +43,11 @@
     }
 
     &:hover::before {
-      transform: translate(-9em);
+      transform: translate(-5em);
     }
 
     &:hover::after {
-      transform: translate(9em);
+      transform: translate(5em);
     }
   }
 
@@ -66,7 +64,9 @@
     transform: translate(0.5em);
   }
 
-  //.failed {
-  //  background-color: theme('colors.red');
-  //}
-}
+  .failed.button::after {
+    background-color: red;
+  }
+  .failed.button::before {
+    background-color: red;
+  }
