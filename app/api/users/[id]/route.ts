@@ -1,4 +1,5 @@
 import { User } from "@/models/user-model";
+import { Expense } from "@/types/expense";
 import { connectMongoDB } from "@/utils/database";
 import { NextResponse } from "next/server";
 
@@ -27,7 +28,7 @@ export async function POST(request: Request, { params }: { params: any }) {
     }
     const update = { $push: { expenses: newExpense } }
     await User.findOneAndUpdate(find, update)
-    return NextResponse.json({ message: "expenses added" });
+    return NextResponse.json({ message: "expenses added" }, { status: 200 })
   } catch (error) {
     console.log("error while adding expense");
   }
