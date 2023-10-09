@@ -5,6 +5,7 @@ import { pieChartDataSetThunk } from "@/state/features/pie-chart/pie-chart-thunk
 import { useAppDispatch, useAppSelector } from "@/state/store";
 import { useEffect } from "react";
 import { selectExpenses } from "@/state/features/expenses/expense-slice";
+import { DataTableDemo } from "@/components/expenses-table";
 
 const Expenses = () => {
     const dispatch = useAppDispatch()
@@ -15,8 +16,9 @@ const Expenses = () => {
     }, [ expenses, dispatch ])
 
     return (
-        <section className="flex flex-col gap=4 text-white">
+        <section className="flex gap=4 text-white">
             <ExpensesPieChart/>
+            <DataTableDemo/>
         </section>
     )
 }
