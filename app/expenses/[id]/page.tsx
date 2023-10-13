@@ -16,9 +16,13 @@ const Expenses = () => {
     }, [ expenses, dispatch ])
 
     return (
-        <section className="flex gap=4 text-white">
-            <ExpensesPieChart/>
-            <DataTableDemo/>
+        <section className="flex text-white flex-wrap min-w-full ">
+            <div className="w-1/2">
+                <ExpensesPieChart/>
+            </div>
+            <div className="w-1/2">
+                <DataTableDemo/>
+            </div>
         </section>
     )
 }

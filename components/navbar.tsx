@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { useEffect } from "react";
 import { useAppDispatch } from "@/state/store";
-import { fetchExpensesThank } from "@/state/features/expenses/thunks/expense-thunks";
+import { fetchExpensesThank } from "@/state/features/expenses/expense-slice";
 
 const Navbar = () => {
     const data = useSession();
