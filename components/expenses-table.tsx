@@ -1,11 +1,10 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client"
 
 import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -15,7 +14,7 @@ import {
 } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
 
-import { useAppSelector } from "@/state/store"
+import { useAppSelector, useAppDispatch } from "@/state/store"
 import { selectExpenses } from "@/state/features/expenses/expense-slice"
 import {
   DropdownMenu,
@@ -37,6 +36,8 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Expense } from "@/types/expense"
+import { useSession } from "next-auth/react"
+import { deleteExpenseThunk } from "@/state/features/expenses/expense-slice"
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -56,9 +57,14 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: "date",
     header: "Date",
-    cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("date")}</div>
-    ),
+    cell: ({ row }) => {
+      const formattedDate = row.getValue("date")
+          ? new Date(row.getValue("date")).toLocaleDateString()
+          : ""
+
+      return <div className="capitalize">{formattedDate}</div>
+
+    },
   },
   {
     accessorKey: "amount",
@@ -79,6 +85,13 @@ export const columns: ColumnDef<Expense>[] = [
     cell: ({ row }) => {
       const expense = row.original
 
+      const dispatch = useAppDispatch()
+      const { data } = useSession()
+      const userId = data?.user?.id
+      const onClickHandler = () => {
+        dispatch(deleteExpenseThunk({ userId, expenseId: expense._id }))
+      }
+
       return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -91,17 +104,22 @@ export const columns: ColumnDef<Expense>[] = [
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator/>
               <DropdownMenuItem>Edit expense</DropdownMenuItem>
-              <DropdownMenuItem>Delete expense</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Button onClick={onClickHandler}
+                        className="p-0 text-red">
+                  <span> Delete expense</span>
+                </Button>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
       )
-    },
+    }
   },
 ]
 
 export function DataTableDemo() {
   const [ columnFilters, setColumnFilters ] = React.useState<ColumnFiltersState>([])
-
+  const dispatch = useAppDispatch()
   const data = useAppSelector(selectExpenses)
   const table = useReactTable({
     data,
@@ -111,18 +129,22 @@ export function DataTableDemo() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 8,
+      }
+    },
     state: {
       columnFilters,
     },
   })
-
   const onChangeHandler = (e: any) => {
     table.getColumn("title")?.setFilterValue(e.target.value)
   }
 
   return (
-      <div className="w-full">
-        <div className="flex items-center py-4">
+      <div className="">
+        <div className="py-4">
           <Input
               placeholder="Filter"
               value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
