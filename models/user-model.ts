@@ -10,6 +10,7 @@ const Expense = {
   id: { type: String, required: true },
   title: { type: String, required: true },
   amount: { type: Number, required: true },
+  currency: { type: String, required: true },
   category: String,
   description: String,
   date: Date,

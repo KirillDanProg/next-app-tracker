@@ -44,14 +44,14 @@ export const columns: ColumnDef<Expense>[] = [
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("title")}</div>
+      <div className="capitalize">{row.getValue("title")}</div>
     ),
   },
   {
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("category")}</div>
+      <div className="capitalize">{row.getValue("category")}</div>
     ),
   },
   {
@@ -59,8 +59,8 @@ export const columns: ColumnDef<Expense>[] = [
     header: "Date",
     cell: ({ row }) => {
       const formattedDate = row.getValue("date")
-          ? new Date(row.getValue("date")).toLocaleDateString()
-          : ""
+        ? new Date(row.getValue("date")).toLocaleDateString()
+        : ""
 
       return <div className="capitalize">{formattedDate}</div>
 
@@ -71,9 +71,10 @@ export const columns: ColumnDef<Expense>[] = [
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
+      const currency = row.original.currency
       const formatted = new Intl.NumberFormat("ru-RU", {
         style: "currency",
-        currency: "RUB",
+        currency: currency,
       }).format(amount)
 
       return <div className="text-right font-medium">{formatted}</div>
@@ -88,38 +89,56 @@ export const columns: ColumnDef<Expense>[] = [
       const dispatch = useAppDispatch()
       const { data } = useSession()
       const userId = data?.user?.id
-      const onClickHandler = () => {
+      const onDeleteClickHandler = () => {
         dispatch(deleteExpenseThunk({ userId, expenseId: expense._id }))
       }
 
+      const onEditClickHandler = () => {
+
+        // const args = {
+        //   userId, 
+        //   expenseId: expense._id,
+        // }
+        // const updatedExpense: Partial<Expense> = {
+        //   title: "qwerqwer",
+        //   amount: 1,
+        //   date: "",
+        //   category: 'Food'
+        // }
+        // dispatch(editExpenseThunk({userId, expenseId: expense._id, updatedExpense}))
+      }
+
       return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4"/>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Button onClick={onEditClickHandler}>
+                <span> Edit expense</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator/>
-              <DropdownMenuItem>Edit expense</DropdownMenuItem>
-              <DropdownMenuItem>
-                <Button onClick={onClickHandler}
-                        className="p-0 text-red">
-                  <span> Delete expense</span>
-                </Button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Button onClick={onDeleteClickHandler}
+                className="p-0 text-red">
+                <span> Delete expense</span>
+              </Button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     }
   },
 ]
 
 export function DataTableDemo() {
-  const [ columnFilters, setColumnFilters ] = React.useState<ColumnFiltersState>([])
-  const dispatch = useAppDispatch()
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const data = useAppSelector(selectExpenses)
   const table = useReactTable({
     data,
@@ -143,87 +162,87 @@ export function DataTableDemo() {
   }
 
   return (
-      <div className="">
-        <div className="py-4">
-          <Input
-              placeholder="Filter"
-              value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-              onChange={onChangeHandler}
-              className="max-w-sm text-black"
-          />
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                )}
-                          </TableHead>
-                      )
-                    })}
-                  </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                      <TableRow
-                          key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                              {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext()
-                              )}
-                            </TableCell>
-                        ))}
-                      </TableRow>
-                  ))
-              ) : (
-                  <TableRow>
-                    <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                    >
-                      No results.
+    <div className="">
+      <div className="py-4">
+        <Input
+          placeholder="Filter"
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={onChangeHandler}
+          className="max-w-sm text-black"
+        />
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
-                  </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="space-x-2">
-            <Button
-                className="text-black"
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-                className="text-black"
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="space-x-2">
+          <Button
+            className="text-black"
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            className="text-black"
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
         </div>
       </div>
+    </div>
   )
 }
