@@ -1,25 +1,32 @@
 "use client";
 
 import styles from "@/styles/AddExpenseStyle.module.scss";
-import Button from "@/components/Button";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { addExpenseThunk, getErrorSelector, getStatusSelector, setStatus } from "@/state/features/expense-slice";
+import { selectError, selectStatus, setStatus } from "@/state/features/expenses/expense-slice";
 import { useAppDispatch, useAppSelector } from "@/state/store";
 import { useEffect } from "react";
 import { Expense } from "@/types/expense";
+import Button from "./button";
+import { addExpenseThunk } from "@/state/features/expenses/expense-slice";
 
 
-function AddExpanseForm() {
+function AddExpenseForm() {
     const { data } = useSession()
-    const status = useAppSelector(getStatusSelector)
-    const error = useAppSelector(getErrorSelector)
-    const { register, handleSubmit, formState: { errors } } = useForm<Expense>()
+    const status = useAppSelector(selectStatus)
+    const error = useAppSelector(selectError)
+    const { register, handleSubmit, formState: { errors, isSubmitSuccessful }, reset } = useForm<Expense>()
     const dispatch = useAppDispatch()
 
     const onSubmitHandler = async (formData: Expense) => {
-        const id = data?.user.id
-        await dispatch(addExpenseThunk({ id, formData }))
+        const userId = data?.user?.id
+        if (!formData.category || formData.category === "Choose a category") {
+            formData.category = "other"
+        }
+        const res = await dispatch(addExpenseThunk({ userId, formData }))
+        if (res.meta.requestStatus === "fulfilled") {
+            reset({ title: "", amount: "", date: "", category: "" })
+        }
     }
 
     let btnStatusStyle;
@@ -46,13 +53,13 @@ function AddExpanseForm() {
                 dispatch(setStatus('idle'))
             }, 3000)
         }
-    }, [ status ])
+    }, [status, dispatch])
 
     return (
         <div className={'flex flex-col flex-center '}>
             <p className={'text-white'}>{error}</p>
             <form className="flex flex-col gap-4"
-                  onSubmit={handleSubmit(onSubmitHandler)}
+                onSubmit={handleSubmit(onSubmitHandler)}
             >
                 <input
                     type="text"
@@ -69,7 +76,7 @@ function AddExpanseForm() {
                         placeholder="Amount"
                     />
                     <select
-                        className={'rounded-full px-2 text-sm'}
+                        className={'input_expense'}
                         {...register('currency')}>
                         <option value={'RUB'}>RUB</option>
                         <option value={'USD'}>USD</option>
@@ -83,7 +90,7 @@ function AddExpanseForm() {
                     placeholder="Choose a category"
                     className="bg-white text-black border rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 >
-                    <option defaultValue="">Choose a category</option>
+                    <option defaultValue="other">Choose a category</option>
                     <option value="food">Food</option>
                     <option value="health">Health</option>
                     <option value="education">Education</option>
@@ -107,4 +114,4 @@ function AddExpanseForm() {
     );
 }
 
-export default AddExpanseForm;
+export default AddExpenseForm;
