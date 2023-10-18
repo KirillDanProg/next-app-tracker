@@ -1,19 +1,27 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import { User } from "@/models/user-model";
 import { connectMongoDB } from "@/utils/database";
+
 
 const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
+      clientId: process.env.GOOGLE_ID!,
+      clientSecret: process.env.GOOGLE_SECRET!,
     }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!
+    })
   ],
   callbacks: {
     async session({ session }) {
       const sessionUser = await User.findOne({ email: session.user?.email });
-      session.user.id = sessionUser?._id.toString();
+      if (session.user) {
+        session.user.id = sessionUser?._id.toString();
+      }
       return session;
     },
     async signIn({ user }) {
